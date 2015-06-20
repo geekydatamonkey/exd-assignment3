@@ -2,64 +2,141 @@
 
 let _ = require('lodash');
 
-function _create2DArray(width,height, initialValue = 0) {
-  let arr = new Array(width);
-  for (let i=0; i < arr.length; i++) {
-    arr[i] = new Array(height);
-    for (let j=0; j < arr[i].length; j++) {
-      arr[i][j] = initialValue;
-    }
-  }
-  return arr;
-}
-
+/**
+* A letter is constructed from Random shapes,
+* which we call LetterForms
+**/
 class Letter {
 
-  constructor(width, height) {
-    // create a 2D array using false for off
-    this.pixels = _create2DArray(width, height, false);
+  constructor(width = 100, height = 100) {
+    this.letterForms = []; // container for letterforms
+    this.width = width;
+    this.height = height;
+    this.sketch = null;
+    this.renderPosition = {x: 0, y: 0};
+    this.background = null;
+    this.slidingTo = {
+      x : this.renderPosition.x,
+      y : this.renderPosition.y
+    };
+    this.isSliding = false;
+    this.slideToCallback = null;
   }
 
-  getWidth() {
-    return this.pixels.length;
+  update() {
+    if (this.isSliding && this.slidingTo.x === this.renderPosition.x) {
+        this.isSliding = false;
+        return this.slideToCallback();
+    }
+    if (this.isSliding) {
+      this.background = 'yellow';
+      this.renderPosition.x -= 10;
+    }
   }
 
-  getHeight() {
-    return this.pixels[0].length;
+  getPixels() {
+    let s = this.sketch;
+    //s.loadPixels();
+    return s.get(
+      this.renderPosition.x,
+      this.renderPosition.y,
+      this.width,
+      this.height
+      );
   }
 
-  setPixelOn(x, y) {
-    this.pixels[x][y] = true;
+  setSketch(s) {
+    this.sketch = s;
   }
 
-  setPixelOff(x, y) {
-    this.pixels[x][y] = false;
+  setBackground(color) {
+    this.background = color;
+  }
+
+  setRenderPosition(x,y) {
+    this.renderPosition = {x, y};
+    this.slidingTo = {x, y};
+  }
+
+  slideTo(x,y, callback) {
+    this.slidingTo = {x, y};
+    this.isSliding = true;
+    this.slideToCallback = callback;
+  }
+
+  clone() {
+    let source = this;
+    let clone = new Letter();
+    clone.letterForms = _.cloneDeep(source.letterForms);
+    return clone;
+  }
+
+  addRandomLetterForm() {
+    let operation = {
+        'fn': this._getShapeFn(),
+        'args': this._getArgs(),
+        'fill': this._getFill()
+    }; 
+    this.letterForms.push(operation);
+  }
+
+  _renderBackground() {
+    let s = this.sketch;
+    s.push();
+    s.noFill();
+    if (this.background) {
+      s.fill(this.background);
+    }
+    s.stroke(222);
+    s.strokeWeight(3);
+    s.rect(0,0, this.width, this.height);
+    s.pop();
+  }
+
+  render() {
+    let s = this.sketch;
+    let self = this;
+
+    s.push();
+    s.translate(self.renderPosition.x,self.renderPosition.y);
+    this._renderBackground();
+
+    _.each(self.letterForms, function(op) {
+      s.fill.apply(s, op.fill);
+      s[op.fn].apply(s,op.args);
+    });
+    s.pop();
   }
 
   /**
-  * Turns every pixel on a list on.
-  * Does not touch pixels not on the list.
-  * 
-  * list in the form of: [[1,4],[1,3],...]
+  * returns a random shape
   **/
-  setPixelsOn(pixelList) {
-    let self = this;
-    _.each(pixelList, function(pixel) {
-      // get coords
-      let x = pixel[0];
-      let y = pixel[1];
-      self.setPixelOn(x,y);
-    });
-  }
-
-  isPixelOn(x,y) {
-    // check if in bounds
-    if (x >= this.getWidth() || y >= this.getHeight) {
-      return false;
+  _getShapeFn() {
+    if (Math.random() < 0.5) {
+      return 'ellipse';
     }
-    return this.pixels[x][y];
+    return 'rect';
   }
 
+  /**
+  * returns random paramenters for shape
+  **/
+  _getArgs() {
+    let x = _.random(100);
+    let y = _.random(100);
+
+    // cannot be wider than 100
+    let w = _.random(0, 100 - x);
+    let h = _.random(0, 100 - y);
+    return [x,y,w,h];
+  }
+
+  _getFill() {
+    if (Math.random() < 0.5) {
+      return [0];
+    }
+    return [255];
+  }
 }
 
 module.exports = Letter;

@@ -1,0 +1,62 @@
+.keygroup {
+  $keysize: 3em;
+  $keyspacing: 0.25em;
+  $border-width: 0.125em;
+  $row-offset: 1em;
+  margin: 0;
+  padding:0;
+  list-style: none;
+  position: relative;
+  width: 30em;
+  height: 15em;
+
+  .key {
+    position: absolute;
+    border: $border-width solid #ccc;
+    width: $keysize;
+    height: $keysize;
+    padding: 0.25em;
+    border-radius: 0.25em;
+  }
+  .key.is-pressed {
+    background-color: #666;
+    color: #fff;
+  }
+  .key-name {
+    text-transform: uppercase;
+  }
+  .key-action {
+    font-size: 0.8em;
+    color: #ccc;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,0 );
+  }
+  .key-up {
+    top: 0;
+    left: $keysize + $keyspacing;
+  }
+  // row 2
+  .key-left, .key-down, .key-right {
+    top: $keysize + $keyspacing;
+  }
+  .key-left {
+    left: $row-offset;
+  }
+  .key-down {
+    left: $row-offset + $keysize + $keyspacing;
+  }
+  .key-right {
+    left: $row-offset + 2 * ($keysize + $keyspacing);
+  }
+  .key-stop {
+    top: 2 * ($keysize + $keyspacing);
+    left: 2 * $row-offset + ($keysize + $keyspacing)
+  }
+  .key-pause {
+    width: 5*$keysize + 4*$keyspacing;
+    top: 3 * ($keysize + $keyspacing);
+    left: 2 * $row-offset + 3*($keysize + $keyspacing);
+  }
+}

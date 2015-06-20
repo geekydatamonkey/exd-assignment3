@@ -1,0 +1,30 @@
+.main-nav {
+  background-color: $black;
+  color: $white;
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    display: inline-block;
+  }
+  li:after {
+    display: inline-block;
+    font-family: FontAwesome;
+    font-size: 1em;
+    margin: 0 0.5em;
+    color: #777;
+    content: "\f105";
+  }
+  li:last-child:after {
+    display: none;
+  }
+  a {
+    color: #aaa;
+    border-bottom-width: 0;
+  }
+  a:hover {
+    color: $white;
+  }
+}

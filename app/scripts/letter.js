@@ -34,15 +34,29 @@ class Letter {
     }
   }
 
-  getPixels() {
+  getPixelDiff(l2) {
+    let pixels = this.getPixels();
+    let pixels2 = l2.getPixels();
+
+    let diff = 0;
+
+    for (var i = 0; i < pixels.length; i++) {
+      if (pixels[i] !== pixels2[i]) {
+        diff += 1;
+      }
+    }
+    return diff;
+  }
+
+  getPixels(x = this.renderPosition.x, y = this.renderPosition.y, w = this.width, h = this.height) {
     let s = this.sketch;
-    //s.loadPixels();
-    return s.get(
-      this.renderPosition.x,
-      this.renderPosition.y,
-      this.width,
-      this.height
-      );
+    let dppx = window.devicePixelRatio;
+    x = x * dppx;
+    y = y * dppx;
+    w = w * dppx;
+    h = h * dppx;
+    let ctx = s.drawingContext;
+    return ctx.getImageData(x,y,s.width,s.height).data;
   }
 
   setSketch(s) {

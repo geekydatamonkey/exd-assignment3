@@ -8,9 +8,11 @@ let Letter = require('./letter');
 //let $ = require('jquery');
 
 let letters = [];
+let idealLetterImg;
 
 let letterWidth = 100;
 let numberOfChoices = 5;
+let currentBest = Math.Infinity;
 
 function mySketch(s) {
 
@@ -34,101 +36,83 @@ function mySketch(s) {
     }
   }
 
-  function colorPicker() {
-    // var img = new Image();
-    // img.src = 'https://mdn.mozillademos.org/files/5397/rhino.jpg';
-    var canvas = document.getElementById('defaultCanvas');
-    var ctx = canvas.getContext('2d');
-    // img.onload = function() {
-    //   ctx.drawImage(img, 0, 0);
-    //   img.style.display = 'none';
-    // };
-    var color = document.getElementById('color');
-    function pick() {
-      var x = s.mouseX;
-      var y = s.mouseY;
-      let d = window.devicePixelRatio;
-      //console.log(`mouse: ${x}, ${y}`);
-      var pixel = ctx.getImageData(x*d, y*d, d, d);
-      var data = pixel.data;
-      var rgba = 'rgba(' + data[0] + ',' + data[1] +
-                 ',' + data[2] + ',' + data[3] + ')';
-      color.style.background =  rgba;
-      color.textContent = rgba;
-      //console.log(`pick data:`, data);
-    }
-    canvas.addEventListener('mousemove', pick);
-  }
-
-  // function pixelDiff(l1, l2) {
-  //   let pixels = l1.getPixels();
-  //   let pixels2 = l2.getPixels();
-
-  //   let diff = 0;
-  //   //let sum = 0;
-  //   for (var i = 0; i < pixels.length; i++) {
-  //     //sum += pixels[i];
-  //     if (pixels[i] !== pixels2[i]) {
-  //       diff += 1;
-  //     }
-  //   }
-  //   //console.log(`sum: ${sum}`);
-  //   return diff;
-  // }
+  s.preload = function() {
+    idealLetterImg = s.loadImage('images/letterA.png');
+  };
 
   s.setup = function (){
 
-    s.createCanvas(letterWidth * numberOfChoices,letterWidth + 1).parent('choices');
+    //s.frameRate(0.5);
+    s.createCanvas(letterWidth * (numberOfChoices + 1),letterWidth + 1).parent('choices');
     s.noStroke();
     s.ellipseMode(s.CORNER);
-    //s.frameRate(1);
-
+    s.image(idealLetterImg,letterWidth * (numberOfChoices + 1), 0);
     makeRandomLetters(5);
-    colorPicker();
   };
 
   s.draw = function() {
-    s.clear();
+    s.background(255);
+    s.image(idealLetterImg,500, 0);
     _.each(letters, function(l) {
       l.update();
       l.render();
     });
 
+    // if (letters[0].getPixelDiff(500,0) > currentBest){
+    //   throw ('current Best increasing?!');
+    // }
+    console.log('letters[0]:' + letters[0].getPixelDiff(500,0));
+
+    let diffs = [];
+    _.each(letters, function(l, i) {
+      diffs[i] = l.getPixelDiff(500,0);
+    });
+
+    let minValue = Math.min.apply(Math, diffs);
+    let minIndex = diffs.indexOf(minValue);
+    let winner = letters[minIndex];
+
+    // if (winner.getPixelDiff(500,0) > currentBest) {
+    //   throw 'not a better letter'
+    // }
+
+    // console.log('diffs ' + diffs);
+    // console.log('minValue ' + minValue);
+    // console.log('minIndex ' + minIndex);
+
+    winner.setRenderPosition(0,0);
+    
+    let newLetters = [];
+    newLetters.push(winner);
+
+    // add mutants of first index
+    for (let i=0; i < 4; i++) {
+      let clone = winner.clone();
+      clone.setRenderPosition((i+1)*100,0);
+      clone.addRandomLetterForm();
+      newLetters.push(clone);
+    }
+
+    letters = newLetters;
+
+    currentBest = letters[0].diff;
 
   };
 
   s.windowResized = function() {};
 
   s.mousePressed = function() {
-    _.each(letters, function(l, i) {
-      let diff = letters[0].getPixelDiff(l);
-      s.push();
-      s.stroke('red');
-      s.fill('red');
-      s.text(diff,10 + i*100, 10);
-      s.pop();
-      console.log(diff);
-    });
-
     // which letter was clicked?
-    let letterIndex = Math.floor(s.mouseX / letterWidth);
-    let l = letters[letterIndex];
-    letters = [l];
-    l.slideTo(0,0, function() {
-      makeRandomLetters(numberOfChoices - 1, l);
-    });
-
-
+    // let letterIndex = Math.floor(s.mouseX / letterWidth);
+    // let l = letters[letterIndex];
+    // letters = [l];
+    // // l.slideTo(0,0, function() {
+    // //   makeRandomLetters(numberOfChoices - 1, l);
+    // // });
+    // l.setRenderPosition(0,0);
+    // makeRandomLetters(numberOfChoices - 1, l);
+    s.noLoop();
   };
-
-  // s.mouseMoved = function() {
-  //   //console.log(s.mouseX, s.mouseY);
-  //   // which letter is hovered?
-  //   let letterIndex = Math.floor(s.mouseX / letterWidth);
-  //   let l = letters[letterIndex];
-  //   let pixels = l.getPixels(s.mouseX, s.mouseY,1,1);
-  //   //console.log('getPixels', pixels);
-  // };
 }
 
 function init() {

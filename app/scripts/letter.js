@@ -15,36 +15,36 @@ class Letter {
     this.sketch = null;
     this.renderPosition = {x: 0, y: 0};
     this.background = null;
-    this.slidingTo = {
-      x : this.renderPosition.x,
-      y : this.renderPosition.y
-    };
-    this.isSliding = false;
-    this.slideToCallback = null;
   }
 
   update() {
-    if (this.isSliding && this.slidingTo.x === this.renderPosition.x) {
-        this.isSliding = false;
-        return this.slideToCallback();
-    }
-    if (this.isSliding) {
-      this.background = 'yellow';
-      this.renderPosition.x -= 10;
-    }
   }
 
-  getPixelDiff(l2) {
+  getPixelDiff(x, y) {
     let pixels = this.getPixels();
-    let pixels2 = l2.getPixels();
+    let pixels2;
+
+    if (x instanceof Letter) {
+      pixels2 = x.getPixels();
+    } else {
+      pixels2 = this.getPixels(x, y);
+    }
 
     let diff = 0;
+
+    if (pixels.length !== pixels2.length) {
+      throw "pixels array not the same length";
+    }
 
     for (var i = 0; i < pixels.length; i++) {
       if (pixels[i] !== pixels2[i]) {
         diff += 1;
       }
     }
+    // if (this.diff && diff !== this.diff) {
+    //   throw "diff changed!";
+    // }
+    this.diff = diff;
     return diff;
   }
 
@@ -56,7 +56,7 @@ class Letter {
     w = w * dppx;
     h = h * dppx;
     let ctx = s.drawingContext;
-    return ctx.getImageData(x,y,s.width,s.height).data;
+    return ctx.getImageData(x,y,w,h).data;
   }
 
   setSketch(s) {
@@ -72,16 +72,13 @@ class Letter {
     this.slidingTo = {x, y};
   }
 
-  slideTo(x,y, callback) {
-    this.slidingTo = {x, y};
-    this.isSliding = true;
-    this.slideToCallback = callback;
-  }
-
   clone() {
     let source = this;
     let clone = new Letter();
     clone.letterForms = _.cloneDeep(source.letterForms);
+    clone.sketch = this.sketch;
+    clone.width = this.width;
+    clone.height = this.height;
     return clone;
   }
 
@@ -101,9 +98,6 @@ class Letter {
     if (this.background) {
       s.fill(this.background);
     }
-    s.stroke(222);
-    s.strokeWeight(3);
-    s.rect(0,0, this.width, this.height);
     s.pop();
   }
 

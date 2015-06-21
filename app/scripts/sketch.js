@@ -102,6 +102,10 @@ function mySketch(s) {
     }); // end each letter in letterList
   };
 
+  function displayText() {
+
+  }
+
   s.windowResized = function() {};
 
   s.mousePressed = function() {

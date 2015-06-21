@@ -1,179 +1,186 @@
 'use strict';
 
-let _ = require('lodash');
+const _ = require('lodash');
+const pixelDensity = window.devicePixelRatio || 1;
 
-/**
-* A letter is constructed from Random shapes,
-* which we call LetterForms
-**/
 class EvolvingLetter {
 
+  constructor(config) {
+
+    let defaults = {
+      width: 100,
+      height: 100,
+      sketch: null,
+      letterForms: [], // {fn, args, fill}
+      idealImage: null,
+      background: [255]
+    };
+
+    config = _.assign({}, defaults, config);
+
+    this.width = config.width;
+    this.height = config.height;
+    this.sketch = config.sketch;
+    this.letterForms = config.letterForms;
+    this.background = config.background;
+    this.idealImage = config.idealImage;
+
+    // buffer for current image of letterforms
+    this.currentBuffer = this.sketch.createGraphics(this.width * pixelDensity, this.height * pixelDensity);
+    this.currentBuffer.background(this.background);
+
+    // Buffer for Ideal graphics form
+    this.idealBuffer = this.sketch.createGraphics(this.width * pixelDensity, this.height * pixelDensity);
+    this.idealBuffer.image(this.idealImage, 0, 0);
+
+  }
+
   /**
-  * creates a new letter
+  * makes an independent copy of the letter
   **/
-  constructor(sketch, x = 0, y = 0, width = 100, height = 100) {
-    this.letterForms = []; // container for letterforms
-    this.width = width;
-    this.height = height;
-    this.renderPosition = {x, y};
-    this.sketch = sketch;
-    this.pixels = null;
-    this.idealPixels = null;
-    this.background = null;
-    this.diff = null;
+  clone() {
+    let self = this;
+    let config = {
+      width: self.width,
+      height: self.height,
+      sketch: self.sketch, // okay that it points to the same sketch
+      letterForms: _.cloneDeep(self.letterForms), // {fn, args, fill}
+      idealImage: self.idealImage,
+      background: _.clone(self.background)
+    };
+    
+    return new EvolvingLetter(config);
   }
 
-  getPixels() {
-    if (!this.pixels) {
-      // TODO: render offscreen to get pixel data
-      // directly from letterforms. Can't trust
-      // render position since it may change after pixels are drawn
-      this.pixels = this._getPixelDataFrom(
-        this.renderPosition.x,
-        this.renderPosition.y,
-        this.width,
-        this.height
-      );
-    }
-    return this.pixels;
-  }
-
-  setIdealPixels(x,y,w,h) {
-    this.idealPixels = this._getPixelDataFrom(x,y,w,h);
-    return this;
-  }
-
-  getIdealPixels() {
-    return this.idealPixels;
-  }
-
-  updateDiffFromIdeal() {
-    let diff = this._pixelDiff(this.getPixels(), this.getIdealPixels());
-
-    this.diff = diff;
-  }
-
+  /**
+  * compares the letter to its ideal form
+  * returns a score. The closer to 0, the more exact
+  * the match
+  **/
   getDiffFromIdeal() {
 
-    if (!this.diff) {
-      this.updateDiffFromIdeal();
+    if (this.diffCache) {
+      return this.diffCache;
     }
 
-    return this.diff;
+    let currentBufferCtx = this.currentBuffer.drawingContext;
+    let idealBufferCtx = this.idealBuffer.drawingContext;
 
-  }
+    let w = this.width * pixelDensity;
+    let h = this.height * pixelDensity;
 
-  _getPixelDataFrom(x,y,w,h) {
-    if (!this.sketch) { throw 'No sketch set.'; }
+    let currentBufferData = currentBufferCtx.getImageData(0,0,w,h).data;
 
-    let dppx = window.devicePixelRatio;
-    let ctx = this.sketch.drawingContext;
+    let idealBufferData = idealBufferCtx.getImageData(0,0,w,h).data;
 
-    x = x * dppx;
-    y = y * dppx;
-    w = w * dppx;
-    h = h * dppx;
-
-    return ctx.getImageData(x,y,w,h).data;
-  }
-
-  _pixelDiff(pixelData1, pixelData2) {
     let diff = 0;
-    
-    if (pixelData1.length !== pixelData2.length) {
-      throw 'pixels array not the same length';
-    }
-
-    for (var i = 0; i < pixelData1.length; i++) {
-      if (pixelData1[i] !== pixelData2[i]) {
+    for (let i=0; i < currentBufferData.length; i++) {
+      if (currentBufferData[i] !== idealBufferData[i]){
         diff += 1;
       }
     }
 
+    // cache it
+    this.diffCache = diff;
+
     return diff;
   }
 
-  setSketch(s) {
-    this.sketch = s;
+
+  /**
+  * mutates the letter
+  **/
+  mutate() {
+    let mutation = {};
+
+    mutation.fn = this._getShapeFn();
+    mutation.args = this._getArgs(mutation.fn);
+    mutation.fill = this._getFill();
+ 
+    this.letterForms.push(mutation);
+    this.diffCache = null; // invalidate cache
+    this.update();
+    return this;
   }
 
-  setBackground(color) {
-    this.background = color;
-  }
 
-  setRenderPosition(x,y) {
-    this.renderPosition = {x, y};
-  }
-
-  clone() {
-    let source = this;
-
-    function Clone() {}
-    Clone.prototype = source;
-    return new Clone();
-  }
-
-  addRandomLetterForm() {
-    let operation = {
-        'fn': this._getShapeFn(),
-        'args': this._getArgs(),
-        'fill': this._getFill()
-    }; 
-    this.letterForms.push(operation);
-
-    // reset diff so that it updates
-    this.diff = null;
-  }
-
-  _renderBackground() {
-    let s = this.sketch;
-    s.push();
-    s.fill(this.background);
-    s.rect(this.renderPosition.x, this.renderPosition.y, this.width, this.height);
-    s.pop();
-  }
-
-  render() {
-    let s = this.sketch;
+  /**
+  * updates the currentBuffer to match the letterForms
+  **/
+  update() {
     let self = this;
+    let buffer = self.currentBuffer;
 
-    s.push();
-    s.translate(self.renderPosition.x,self.renderPosition.y);
-    this._renderBackground();
+    buffer.push();
+    buffer.noStroke();
+    _.each(self.letterForms, function(form){
+      // set the proper fill color
+      buffer.fill.apply(buffer, form.fill);
 
-    _.each(self.letterForms, function(op) {
-      s.fill.apply(s, op.fill);
-      s[op.fn].apply(s,op.args);
+      // draw shape
+      buffer[form.fn].apply(buffer, form.args);
     });
-    s.pop();
+    buffer.pop();
+
   }
+
+  /**
+   * renders the letter at coordinates (x,y)
+   **/
+
+  render(x,y) {
+    this.sketch.image(this.currentBuffer, x, y);
+    return this;
+  }
+
 
   /**
   * returns a random shape
   **/
   _getShapeFn() {
-    if (Math.random() < 0.5) {
-      return 'ellipse';
-    }
-    return 'rect';
+    let fnList = [
+      'ellipse',
+      'rect',
+      'triangle'
+    ];
+    let i = _.random(0, fnList.length - 1);
+    return fnList[i];
   }
 
   /**
   * returns random paramenters for shape
   **/
-  _getArgs() {
-    let x = _.random(100);
-    let y = _.random(100);
+  _getArgs(fn) {
 
-    // cannot be wider than 100
-    let w = _.random(0, 100 - x);
-    let h = _.random(0, 100 - y);
+    if (fn === 'triangle') {
+      return[
+        _.random(0, 100), //x1
+        _.random(0, 100), //y1
+        _.random(0, 100), //x2
+        _.random(0, 100), //y2
+        _.random(0, 100), //x3
+        _.random(0, 100), //y3
+      ];
+    }
+
+    let w = _.random(2,30);
+    let h = _.random(2,30);
+
+    // keep shape in bounds
+    let x = _.random(0, 100 - w);
+    let y = _.random(0, 100 - h);
+
     return [x,y,w,h];
   }
 
   _getFill() {
+    if (Math.random() < 0.75) {
+      return [0];
+    }
     return [255];
   }
+
 }
+
 
 module.exports = EvolvingLetter;

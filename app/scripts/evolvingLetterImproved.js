@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const cloner = require('js-object-clone'); // Object.clone()
 const pixelDensity = window.devicePixelRatio || 1;
 
 class EvolvingLetter {
@@ -14,7 +13,7 @@ class EvolvingLetter {
       sketch: null,
       letterForms: [], // {fn, args, fill}
       idealImage: null,
-      background: [0]
+      background: [255]
     };
 
     config = _.assign({}, defaults, config);
@@ -24,6 +23,7 @@ class EvolvingLetter {
     this.sketch = config.sketch;
     this.letterForms = config.letterForms;
     this.background = config.background;
+    this.idealImage = config.idealImage;
 
     // buffer for current image of letterforms
     this.currentBuffer = this.sketch.createGraphics(this.width * pixelDensity, this.height * pixelDensity);
@@ -31,7 +31,7 @@ class EvolvingLetter {
 
     // Buffer for Ideal graphics form
     this.idealBuffer = this.sketch.createGraphics(this.width * pixelDensity, this.height * pixelDensity);
-    this.idealBuffer.image(config.idealImage, 0, 0);
+    this.idealBuffer.image(this.idealImage, 0, 0);
 
   }
 
@@ -39,7 +39,17 @@ class EvolvingLetter {
   * makes an independent copy of the letter
   **/
   clone() {
-    return Object.clone(this);
+    let self = this;
+    let config = {
+      width: self.width,
+      height: self.height,
+      sketch: self.sketch, // okay that it points to the same sketch
+      letterForms: _.cloneDeep(self.letterForms), // {fn, args, fill}
+      idealImage: self.idealImage,
+      background: _.clone(self.background)
+    };
+    
+    return new EvolvingLetter(config);
   }
 
   /**
@@ -92,6 +102,7 @@ class EvolvingLetter {
     let buffer = self.currentBuffer;
 
     buffer.push();
+    buffer.noStroke();
     _.each(self.letterForms, function(form){
       // set the proper fill color
       buffer.fill.apply(buffer, form.fill);
@@ -137,9 +148,11 @@ class EvolvingLetter {
   }
 
   _getFill() {
+    if (Math.random() < 0.75) {
+      return [0];
+    }
     return [255];
   }
-
 
 }
 

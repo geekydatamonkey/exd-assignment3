@@ -24,32 +24,44 @@ function mySketch(s) {
     // ideal A
     s.image(imgA, 0, 0);
 
-    let l = new Letter({
-      sketch: s,
-      idealImage: imgA
-    });
-
-    l.render(100,0);
-    //l2.render(200,0);
-    //l3.render(300,0);
-
-    console.log(l.getDiffFromIdeal());
-    //console.log(l2.getDiffFromIdeal());
-    //console.log(l3.getDiffFromIdeal());
-
-    let l2 = l.clone();
-    l2.mutate();
-    l2.render(200,0);
-    console.log(l2.getDiffFromIdeal());
-
-    let l3 = l2.clone();
-    l3.mutate().render(300,0);
-    console.log(l3.getDiffFromIdeal());
-
-
+    for (let i = 0; i < 4; i++) {
+      let l = new Letter({
+        sketch: s,
+        idealImage: imgA
+      });
+      l.mutate().render(100 + i*100,0);
+      console.log(l.getDiffFromIdeal());
+      letters.push(l);
+    }
   };
 
   s.draw = function() {
+
+    // which of the current letters is best?
+    let diffs = [];
+    _.each(letters, function(l) {
+      diffs.push(l.getDiffFromIdeal());
+    });
+    console.log(diffs);
+    let min = Math.min.apply(Math,diffs);
+    console.log(min);
+    let indexOfParent = diffs.indexOf(min);
+    console.log(indexOfParent);
+
+    // make parent, cull the rest
+    let parent = letters[indexOfParent];
+    letters = [parent];
+
+    s.clear();
+    s.image(imgA, 0, 0);
+    parent.render(100,0);
+
+    // create offspring (with mutations) based on winner
+    for (let i = 0; i < 3; i++) {
+      let offspring = parent.clone();
+      offspring.mutate().render(200 + i*100,0);
+      letters.push(offspring);
+    }
 
   };
 

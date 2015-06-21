@@ -8,6 +8,8 @@ let Letter = require('./evolvingLetterImproved');
 
 let letters = [];
 let imgA;
+let loopsPerRender = 10;
+let loopNum = 0;
 
 function mySketch(s) {
 
@@ -52,17 +54,23 @@ function mySketch(s) {
     let parent = letters[indexOfParent];
     letters = [parent];
 
-    s.clear();
-    s.image(imgA, 0, 0);
-    parent.render(100,0);
-
     // create offspring (with mutations) based on winner
     for (let i = 0; i < 3; i++) {
       let offspring = parent.clone();
-      offspring.mutate().render(200 + i*100,0);
+      offspring.mutate();
       letters.push(offspring);
     }
 
+    // render only every so often
+    if (loopNum === 0) {
+      s.clear();
+      s.image(imgA, 0, 0);
+      _.each(letters, function(l,i) {
+        l.render(100 + i*100,0);
+      });
+    }
+
+    loopNum = (loopNum + 1) % loopsPerRender;
   };
 
   s.windowResized = function() {};

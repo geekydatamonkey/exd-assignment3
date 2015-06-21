@@ -47,6 +47,13 @@ function mySketch(s) {
     console.log(l.getDiffFromIdeal());
     console.log(l2.getDiffFromIdeal());
     console.log(l3.getDiffFromIdeal());
+
+    let l4 = l.clone();
+    console.log(l4);
+    l4.render(400,0);
+    console.log(l4.getDiffFromIdeal());
+
+
   };
 
   s.draw = function() {

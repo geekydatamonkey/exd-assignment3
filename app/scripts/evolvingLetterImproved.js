@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const cloner = require('js-object-clone'); // Object.clone()
 const pixelDensity = window.devicePixelRatio || 1;
 
 class EvolvingLetter {
@@ -37,7 +38,9 @@ class EvolvingLetter {
   /**
   * makes an independent copy of the letter
   **/
-  clone() {}
+  clone() {
+    return Object.clone(this);
+  }
 
   /**
   * compares the letter to its ideal form
@@ -76,7 +79,6 @@ class EvolvingLetter {
    **/
 
   render(x,y) {
-    console.log(this.currentBuffer);
     this.sketch.image(this.currentBuffer, x, y);
   }
 

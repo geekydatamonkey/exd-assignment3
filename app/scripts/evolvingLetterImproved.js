@@ -12,7 +12,7 @@ class EvolvingLetter {
       width: 100,
       height: 100,
       sketch: null,
-      letterForms: [],
+      letterForms: [], // {fn, args, fill}
       idealImage: null,
       background: [0]
     };
@@ -72,7 +72,36 @@ class EvolvingLetter {
   /**
   * mutates the letter
   **/
-  mutate() {}
+  mutate() {
+    let mutation = {
+      'fn': this._getShapeFn(),
+      'args': this._getArgs(),
+      'fill': this._getFill()
+    }; 
+    this.letterForms.push(mutation);
+    this.update();
+    return this;
+  }
+
+
+  /**
+  * updates the currentBuffer to match the letterForms
+  **/
+  update() {
+    let self = this;
+    let buffer = self.currentBuffer;
+
+    buffer.push();
+    _.each(self.letterForms, function(form){
+      // set the proper fill color
+      buffer.fill.apply(buffer, form.fill);
+
+      // draw shape
+      buffer[form.fn].apply(buffer, form.args);
+    });
+    buffer.pop();
+
+  }
 
   /**
    * renders the letter at coordinates (x,y)
@@ -80,8 +109,36 @@ class EvolvingLetter {
 
   render(x,y) {
     this.sketch.image(this.currentBuffer, x, y);
+    return this;
   }
 
+
+  /**
+  * returns a random shape
+  **/
+  _getShapeFn() {
+    if (Math.random() < 0.5) {
+      return 'ellipse';
+    }
+    return 'rect';
+  }
+
+  /**
+  * returns random paramenters for shape
+  **/
+  _getArgs() {
+    let x = _.random(100);
+    let y = _.random(100);
+
+    // cannot be wider than 100
+    let w = _.random(0, 100 - x);
+    let h = _.random(0, 100 - y);
+    return [x,y,w,h];
+  }
+
+  _getFill() {
+    return [255];
+  }
 
 
 }

@@ -29,29 +29,22 @@ function mySketch(s) {
       idealImage: imgA
     });
 
-    let l2 = new Letter({
-      sketch: s,
-      idealImage: imgA,
-      background: [255,0,0,255]
-    });
-    let l3 = new Letter({
-      sketch: s,
-      idealImage: imgA,
-      background: [255,255,255,255]
-    });
-
     l.render(100,0);
-    l2.render(200,0);
-    l3.render(300,0);
+    //l2.render(200,0);
+    //l3.render(300,0);
 
     console.log(l.getDiffFromIdeal());
-    console.log(l2.getDiffFromIdeal());
-    console.log(l3.getDiffFromIdeal());
+    //console.log(l2.getDiffFromIdeal());
+    //console.log(l3.getDiffFromIdeal());
 
-    let l4 = l.clone();
-    console.log(l4);
-    l4.render(400,0);
-    console.log(l4.getDiffFromIdeal());
+    let l2 = l.clone();
+    l2.mutate();
+    l2.render(200,0);
+    console.log(l2.getDiffFromIdeal());
+
+    let l3 = l2.clone();
+    l3.mutate().render(300,0);
+    console.log(l3.getDiffFromIdeal());
 
 
   };

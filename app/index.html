@@ -38,8 +38,11 @@
     <main class="container">
       <section class="select-letter">
         <h1>Evolving Letters</h1>
-        <p>Letters evolve using a simple evolutionary algorithm. Rendering updates every 5 generations.</p>
-        <div id="choices">
+        <p>Each letter begins as empty space. Then, with each generation, a random mutation occurs: a randomly size ellipse, rectangle, or triangle is added to the canvas.</p>
+        <p>Fitness is measured by taking the pixel-difference between the letterform and the "ideal letter". The "most fit" letterform survives. The remainder are culled.</p>
+        <p>The process begins again. The "most fit" letterform is cloned, but each of its children get a random mutation. Some will be better, some worse than the parent. Again, fitness is measured and only the most fit go onto the next generation.</p>
+        <p>Over many generations, the letterform begins to resemble the "most fit letter".</p>
+        <div id="petri-dish">
         </div>
       </section>
 

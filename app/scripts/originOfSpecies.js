@@ -4,26 +4,27 @@
 'use strict';
 let p5 = require('p5');
 let _ = require('lodash');
-let Letter = require('./evolvingLetter');
+let settings = require('./settings');
 let letterList = window.letterList;
 console.log(letterList);
 
 let text;
-let textSize = 48;
+let textSize = 64;
 
 function mySketch(s) {
 
   s.preload = function() {
     text = s.loadStrings('origin.txt');
-  }
+  };
 
   s.setup = function() {
     s.noStroke();
-    s.createCanvas(500,1500).parent('result');
+    s.createCanvas(960 - 3 * textSize, 1000).parent('result');
     s.textSize(textSize);
     text = text.join('').toUpperCase().split('');
     console.log(letterList);
-  }
+    s.frameRate(settings.sketch.frameRate);
+  };
 
   s.draw = function() {
     s.background(255);
@@ -36,7 +37,7 @@ function mySketch(s) {
       if (cursor.y > s.height) {
         return;
       }
-      if (cursor.x > s.width) {
+      if (cursor.x + textSize > s.width) {
         cursor.x = 0;
         cursor.y = cursor.y + textSize;
       }
@@ -62,10 +63,14 @@ function mySketch(s) {
         s.text(text[i],cursor.x, cursor.y);
         s.pop();
       }
-      cursor.x += textSize;
-    }
-  }
+      if (text[i] === 'I') {
+        cursor.x += 0.45*textSize;
+      } else {
+        cursor.x += 0.9*textSize;
+      }
 
+    }
+  };
 }
 
 function init() {

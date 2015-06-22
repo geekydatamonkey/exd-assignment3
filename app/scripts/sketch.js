@@ -23,10 +23,10 @@ function mySketch(s) {
 
   s.setup = function (){
 
-    s.createCanvas(500,100 * letterList.length).parent('choices');
+    s.createCanvas(500,100 * letterList.length).parent('petri-dish');
     s.noStroke();
     s.ellipseMode(s.CORNER);
-    //s.frameRate(1);
+    s.frameRate(settings.sketch.frameRate);
 
     // Setup each letter in letterList
     _.each(letterList, function(letter, letterNum) {

@@ -1,6 +1,9 @@
 'use strict';
 
 module.exports = {
+  'sketch': {
+    frameRate: 1
+  },
   'letterList': [
     { 
       id: 'A',

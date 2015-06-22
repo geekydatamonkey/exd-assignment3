@@ -128,8 +128,8 @@ class EvolvingLetter {
    * renders the letter at coordinates (x,y)
    **/
 
-  render(x,y) {
-    this.sketch.image(this.currentBuffer, x, y);
+  render(x,y, w = this.width, h = this.height, sketch = this.sketch) {
+    sketch.image(this.currentBuffer, x, y, w*pixelDensity, h*pixelDensity);
     return this;
   }
 

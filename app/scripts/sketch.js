@@ -5,29 +5,10 @@
 let p5 = require('p5');
 let _ = require('lodash');
 let Letter = require('./evolvingLetter');
+let settings = require('./settings');
+let letterList = window.letterList = settings.letterList;
 
-let letterList = [
-  { 
-    id: 'A',
-    population: [],
-    filename: 'images/lowercaseA.png',
-    imageBuffer: null // to be filled in by preload
-  },
-  {
-    id: 'B',
-    filename: 'images/letterB.png'
-  },
-  {
-    id: 'C',
-    filename: 'images/letterC.png'
-  },
-  {
-    id: 'D',
-    filename: 'images/letterD.png'
-  }
-];
-
-let loopsPerRender = 5;
+let loopsPerRender = 1;
 let loopNum = 0;
 
 function mySketch(s) {
@@ -45,6 +26,7 @@ function mySketch(s) {
     s.createCanvas(500,100 * letterList.length).parent('choices');
     s.noStroke();
     s.ellipseMode(s.CORNER);
+    //s.frameRate(1);
 
     // Setup each letter in letterList
     _.each(letterList, function(letter, letterNum) {
@@ -102,15 +84,8 @@ function mySketch(s) {
     }); // end each letter in letterList
   };
 
-  function displayText() {
-
-  }
-
   s.windowResized = function() {};
 
-  s.mousePressed = function() {
-    s.noLoop();
-  };
 }
 
 function init() {

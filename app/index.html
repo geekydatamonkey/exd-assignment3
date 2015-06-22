@@ -12,6 +12,7 @@
     <!-- endbower -->
     <!-- endbuild -->
 
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <!-- build:css styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
@@ -32,16 +33,18 @@
           <li><a href="http://jjohnson136.studio.mcad.edu/exd">Week 3</a></li>
           <li>Assignment 3</li>
         </ul>
+        <p class="source"><a href="https://github.com/johnsojr/exd-assignment3" target="_blank"><i class="fa fa-github"></i></a></p>
       </div>
     </nav>
 
     <main class="container">
       <section class="select-letter">
         <h1>Evolving Letters</h1>
-        <p>Each letter begins as empty space. Then, with each generation, a random mutation occurs: a randomly size ellipse, rectangle, or triangle is added to the canvas.</p>
-        <p>Fitness is measured by taking the pixel-difference between the letterform and the "ideal letter". The "most fit" letterform survives. The remainder are culled.</p>
-        <p>The process begins again. The "most fit" letterform is cloned, but each of its children get a random mutation. Some will be better, some worse than the parent. Again, fitness is measured and only the most fit go onto the next generation.</p>
+        <p>Each letter begins as empty space. Then, with each generation, a random mutation occurs: a randomly sized ellipse, rectangle, or triangle is added to the canvas.</p>
+        <p>Fitness is measured by taking the pixel-difference between the letterform and the "ideal letter" (pictured on the left). The "most fit" letterform survives. The remainder are culled.</p>
+        <p>The process begins again. The "most fit" parent (in 2nd column) letterform is cloned, but each of its children get a random mutation (columns 3-5). Some will be better, some worse than the parent. Again, fitness is measured and only the most fit go onto the next generation.</p>
         <p>Over many generations, the letterform begins to resemble the "most fit letter".</p>
+        <p>The image is substituted into Darwin's <i>Origin of Species</i>.</p>
         <div id="petri-dish">
         </div>
       </section>

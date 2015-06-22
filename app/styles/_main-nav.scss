@@ -27,4 +27,13 @@
   a:hover {
     color: $white;
   }
+  .source {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+    position: absolute;
+    top: 1rem;
+    right: 0;
+    font-size: 1.25em;
+  }
 }

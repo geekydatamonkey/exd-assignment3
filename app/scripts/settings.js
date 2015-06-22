@@ -2,7 +2,7 @@
 
 module.exports = {
   'sketch': {
-    frameRate: 1
+    frameRate: 2
   },
   'letterList': [
     { 
